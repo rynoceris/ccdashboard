@@ -1,5 +1,5 @@
 <?php 
-	header("Access-Control-Allow-Origin: *");
+	//header("Access-Control-Allow-Origin: *");
 	require './bigcommerce.php';
 	use Bigcommerce\Api\Client as Bigcommerce;
 	
@@ -15,14 +15,55 @@
 	
 	Bigcommerce::setCipher('RC4-SHA');
 	Bigcommerce::verifyPeer(false);
+	
+	$currentdate = strtotime(date("Ymd"));	
+	//echo $currentdate;
     
-    $count = Bigcommerce::getOrdersCount()/200;
-    for ($i = 1; $i <= $count; $i) {
-        $filter = array('limit' => 200, 'page' => $i);
-        $orders = Bigcommerce::getOrders($filter);
-        foreach($orders as $order) {
-            echo $order->name;
-            echo $order->price;
-        }
-     }
+    $mindate = date(DateTime::RFC2822, $currentdate);
+    //echo $mindate;
+    
+    $displaydate = date('m/d/Y', $currentdate);
+    
+    //$ping = Bigcommerce::getTime();
+
+    //if ($ping) echo $ping->format('H:i:s');
+    $count = Bigcommerce::getOrdersCount()/5;
+    //for ($i = 1; $i <= $count; $i) {
+    	
+    	$filter = array('min_date_created' => $mindate, 'status_id' => 11, 'limit' => 5, 'page' => 1);
+    	$orders = Bigcommerce::getOrders($filter);
+    	if(!$orders) {
+	 	   	echo '<div class="BCerror">';
+	 	   	$error = Bigcommerce::getLastError();
+	 	   	echo $error->code;
+	 	   	echo $error->message;
+	 	   	echo '</div>';
+	 	} else {
+		 	echo 'Recent Orders:<br />';
+		 	//$arraystring = '<pre>'.print_r($orders, true).'</pre>';
+		 	//echo $arraystring;
+		 	foreach($orders as $order) {
+            	echo 'Order #: ' . $order->id . '<br />';
+            	echo 'Order Total: ' . $order->total_inc_tax . '<br />';
+            }
+		}
+	//}
+    
+    $productsCount = Bigcommerce::getProductsCount();
+
+    echo $productsCount . ' Products<br />';
+    
+    $categoriesCount = Bigcommerce::getCategoriesCount();
+    
+    echo $categoriesCount . ' Categories<br />';
+    
+    $customersCount = Bigcommerce::getCustomersCount();
+    
+    echo $customersCount . ' Customers<br />';
+    
+    //$orderStatuses = Bigcommerce::getOrderStatuses();
+    
+    //$arraystring = '<pre>'.print_r($orderStatuses, true).'</pre>';
+    
+    //echo $arraystring;
 ?>
